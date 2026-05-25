@@ -44,12 +44,10 @@ export async function handler(input: ContradictInput): Promise<string> {
     const pair = demote(originalObs, newObs, Date.now(), quarantineId);
     await quarantine.add(pair);
 
-    // Mark original as contested in consolidated
+    // Remove original from consolidated (it has been quarantined)
     const existing = await readConsolidated(input.domain);
     if (existing) {
-      const updatedEntries = existing.entries.map((e) =>
-        e.obs_id === input.obs_id ? { ...e, status: "contested" as const } : e
-      );
+      const updatedEntries = existing.entries.filter((e) => e.obs_id !== input.obs_id);
       await writeConsolidated(input.domain, updatedEntries);
     }
 

@@ -87,10 +87,10 @@ export async function handler(input: ConsolidateInput): Promise<string> {
       const pair = demote(originalObs, obs, Date.now(), quarantineId);
       await quarantine.add(pair);
 
-      // Mark the contested entry in consolidated
+      // Remove the quarantined entry from consolidated
       const idx = updatedEntries.findIndex((e) => e.obs_id === targetId);
       if (idx >= 0) {
-        updatedEntries[idx] = { ...updatedEntries[idx], status: "contested" };
+        updatedEntries.splice(idx, 1);
       }
       quarantined++;
     }

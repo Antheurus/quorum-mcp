@@ -1,0 +1,32 @@
+{
+  "$schema": "https://quorum.local/config.schema.json",
+  "version": "0.1.0",
+  "storage_dir": "/Users/macbook/.claude/mcp-servers/quorum/data",
+  "dashboard": {
+    "port": 4729,
+    "host": "127.0.0.1"
+  },
+  "similarity": {
+    "engine": "hash-only",
+    "api_keys": {
+      "anthropic": null,
+      "openai": null,
+      "gemini": null,
+      "deepseek": null,
+      "minimax": null
+    },
+    "claude_model": "claude-haiku-4-5-20251001"
+  },
+  "ttl_defaults": {
+    "verified-api-endpoint": 30,
+    "verified-static-behavior": 365,
+    "verified-workflow": 60,
+    "gotcha": 90,
+    "failure-mode": 180,
+    "hypothesis": 14
+  },
+  "consolidation": {
+    "min_consensus_count": 2
+  },
+  "domains": {}
+}

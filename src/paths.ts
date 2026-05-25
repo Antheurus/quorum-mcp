@@ -42,6 +42,10 @@ export function archivePath(storageDir: string, domain: string, suffix: string):
   return path.join(storageDir, "archive", `${domain}_${suffix}.jsonl`);
 }
 
+export function statePath(storageDir: string, domain: string): string {
+  return path.join(storageDir, `${domain}.state.json`);
+}
+
 export async function atomicWrite(filePath: string, content: string): Promise<void> {
   const tmp = filePath + ".tmp." + Date.now();
   await Bun.write(tmp, content);

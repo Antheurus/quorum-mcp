@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quorum Dashboard</title>
+  <link rel="stylesheet" href="/style.css" />
+  <script src="//unpkg.com/alpinejs@3" defer></script>
+  <script src="/app.js"></script>
+</head>
+<body>
+<div id="app" x-data="app()">
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <h1>Quorum</h1>
+    <nav>
+      <button class="tab-btn"
+        :class="{ active: view === 'overview' }"
+        @click="backToOverview()">Overview</button>
+
+      <button class="tab-btn"
+        x-show="selectedDomain !== null"
+        :class="{ active: view === 'domain' }"
+        x-text="selectedDomain"
+        @click="view = 'domain'"></button>
+
+      <button class="tab-btn"
+        :class="{ active: view === 'settings' }"
+        @click="view = 'settings'">Settings</button>
+    </nav>
+  </header>
+
+  <!-- ===================== OVERVIEW ===================== -->
+  <div x-show="view === 'overview'">
+    <div class="card">
+      <h2>Domains</h2>
+      <template x-if="domains.length === 0">
+        <div class="empty">No domains found. Add observations via MCP tools to get started.</div>
+      </template>
+      <div class="domain-grid" x-show="domains.length > 0">
+        <template x-for="d in domains" :key="d.name">
+          <div class="domain-card" @click="selectDomain(d.name)">
+            <h3 x-text="d.name"></h3>
+            <div class="stat">Ledger entries: <span x-text="d.ledgerCount ?? '—'"></span></div>
+            <div class="stat">Consolidated: <span x-text="d.consolidatedCount ?? '—'"></span></div>
+            <div class="stat">Quarantine: <span x-text="d.quarantineCount ?? '—'"></span></div>
+            <div class="stat">Last updated: <span x-text="d.lastUpdated ? formatTs(d.lastUpdated) : '—'"></span></div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== DOMAIN VIEW ===================== -->
+  <div x-show="view === 'domain'">
+
+    <!-- Domain header + actions -->
+    <div class="domain-header">
+      <h2 x-text="selectedDomain"></h2>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-sm" :disabled="consolidating" @click="consolidate()">
+          <span x-show="!consolidating">Consolidate Now</span>
+          <span x-show="consolidating">Running…</span>
+        </button>
+        <button class="btn btn-sm btn-back" @click="backToOverview()">← Back</button>
+      </div>
+    </div>
+
+    <!-- Consolidate result -->
+    <div class="consolidate-result" x-show="consolidateResult !== null">
+      <template x-if="consolidateResult">
+        <span>
+          <strong>Done:</strong>
+          merged <span x-text="consolidateResult.merged ?? 0"></span>,
+          promoted <span x-text="consolidateResult.promoted ?? 0"></span>,
+          archived <span x-text="consolidateResult.archived ?? 0"></span>,
+          quarantined <span x-text="consolidateResult.quarantined ?? 0"></span>
+        </span>
+      </template>
+    </div>
+
+    <!-- Inner tabs -->
+    <div class="inner-tabs">
+      <button class="inner-tab" :class="{active: domainTab==='ledger'}"    @click="loadTab('ledger')">Ledger</button>
+      <button class="inner-tab" :class="{active: domainTab==='consolidated'}" @click="loadTab('consolidated')">Consolidated</button>
+      <button class="inner-tab" :class="{active: domainTab==='quarantine'}"  @click="loadTab('quarantine')">Quarantine</button>
+    </div>
+
+    <div class="loading" x-show="loading">Loading…</div>
+
+    <!-- LEDGER tab -->
+    <div x-show="domainTab === 'ledger' && !loading">
+      <template x-if="ledger.length === 0">
+        <div class="empty">No ledger entries yet.</div>
+      </template>
+      <div class="table-wrap" x-show="ledger.length > 0">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Key</th>
+              <th>Value</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(row, i) in ledger" :key="i">
+              <tr>
+                <td class="dim" x-text="formatTs(row.timestamp)"></td>
+                <td x-text="row.key"></td>
+                <td x-text="typeof row.value === 'object' ? JSON.stringify(row.value) : row.value"></td>
+                <td class="dim" x-text="row.source ?? '—'"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CONSOLIDATED tab -->
+    <div x-show="domainTab === 'consolidated' && !loading">
+      <template x-if="consolidated.length === 0">
+        <div class="empty">No consolidated entries yet. Run "Consolidate Now" first.</div>
+      </template>
+      <div class="table-wrap" x-show="consolidated.length > 0">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Canonical Value</th>
+              <th>Sources</th>
+              <th>Last Seen</th>
+              <th>Confidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(row, i) in consolidated" :key="i">
+              <tr>
+                <td x-text="row.key"></td>
+                <td x-text="typeof row.value === 'object' ? JSON.stringify(row.value) : row.value"></td>
+                <td class="dim" x-text="Array.isArray(row.sources) ? row.sources.join(', ') : (row.sources ?? '—')"></td>
+                <td class="dim" x-text="formatTs(row.lastSeen)"></td>
+                <td x-text="row.confidence !== undefined ? formatScore(row.confidence) : '—'"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- QUARANTINE tab -->
+    <div x-show="domainTab === 'quarantine' && !loading">
+      <template x-if="quarantine.length === 0">
+        <div class="empty">No pairs in quarantine.</div>
+      </template>
+      <div class="pair-list" x-show="quarantine.length > 0">
+        <template x-for="(pair, i) in quarantine" :key="i">
+          <div class="pair-row">
+            <!-- Side A -->
+            <div class="pair-side">
+              <div class="pair-label">Entry A</div>
+              <div class="pair-value" x-text="pair.a?.key ?? '—'"></div>
+              <div class="pair-meta" x-text="typeof pair.a?.value === 'object' ? JSON.stringify(pair.a.value) : (pair.a?.value ?? '—')"></div>
+            </div>
+            <!-- Side B -->
+            <div class="pair-side">
+              <div class="pair-label">Entry B</div>
+              <div class="pair-value" x-text="pair.b?.key ?? '—'"></div>
+              <div class="pair-meta" x-text="typeof pair.b?.value === 'object' ? JSON.stringify(pair.b.value) : (pair.b?.value ?? '—')"></div>
+            </div>
+            <!-- Score row -->
+            <div class="pair-score">
+              Similarity score: <strong x-text="formatScore(pair.score)"></strong>
+              <span x-show="pair.reason" x-text="' — ' + pair.reason" class="dim"></span>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+  </div><!-- /domain view -->
+
+  <!-- ===================== SETTINGS ===================== -->
+  <div x-show="view === 'settings'">
+    <div class="card">
+      <h2>Settings</h2>
+
+      <template x-if="config === null">
+        <div class="loading">Loading config…</div>
+      </template>
+
+      <template x-if="config !== null">
+        <div>
+          <!-- Similarity engine -->
+          <div class="settings-group">
+            <label>Similarity Engine</label>
+            <select class="engine-select" x-model="config.similarity.engine">
+              <template x-for="name in engineNames" :key="name">
+                <option :value="name" x-text="name"></option>
+              </template>
+            </select>
+          </div>
+
+          <!-- API key — shown only when engine needs one -->
+          <div class="settings-group" x-show="needsApiKey.includes(config.similarity.engine)">
+            <label x-text="'API Key (' + (currentApiKeyField ?? 'key') + ')'"></label>
+            <input
+              type="password"
+              class="text-input"
+              :value="currentApiKeyValue"
+              @input="currentApiKeyValue = $event.target.value"
+              placeholder="Enter API key…"
+              autocomplete="off"
+            />
+          </div>
+
+          <!-- Dashboard port (read-only context) -->
+          <template x-if="config.dashboard">
+            <div class="settings-group">
+              <label>Dashboard Port</label>
+              <input type="text" class="text-input" :value="config.dashboard.port" readonly style="color:#666;cursor:default;" />
+            </div>
+          </template>
+
+          <button class="btn" :disabled="savingConfig" @click="saveConfig()">
+            <span x-show="!savingConfig">Save Settings</span>
+            <span x-show="savingConfig">Saving…</span>
+          </button>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- ===================== TOAST ===================== -->
+  <div class="toast" :class="toast?.type" x-show="toast !== null" x-text="toast?.msg"></div>
+
+</div><!-- /#app -->
+</body>
+</html>

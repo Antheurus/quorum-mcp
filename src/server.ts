@@ -145,5 +145,5 @@ const config = await loadConfig();
 export default {
   fetch: app.fetch,
   port: config.dashboard.port,
-  hostname: config.dashboard.host,
+  hostname: "127.0.0.1",
 };

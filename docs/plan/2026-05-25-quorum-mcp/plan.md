@@ -586,7 +586,20 @@ _(empty — filled by reviewer after Phase 9)_
 
 ## Final status
 
-_(empty — written when orchestration completes)_
+**Completed 2026-05-25 — HEAD `8fa5804`**
+
+Quorum MCP shipped as planned: 9 phases, 20 commits from baseline `1a7e40f` to final `8fa5804`. The build delivers a fully functional swarm-agent memory MCP at `~/.claude/mcp-servers/quorum/` — append-only JSONL ledger, deterministic consolidator with 4 live similarity engines + 3 stubs, 6 MCP tools (learn_shout/recall/consolidate/contradict/verify/status), Hono HTTP dashboard on port 4729, vanilla JS + Alpine.js frontend with dark theme, and a 4-subcommand CLI.
+
+The anti-poisoning architecture (TTL decay, evidence provenance, contradiction quarantine, cache-bust version headers) landed intact. The version header `<!-- quorum | domain=X | content_hash=Y | recall_ts=Z -->` changes content_hash whenever the consolidated store updates, forcing KV cache misses on every structural change — the core structural defense against context poisoning.
+
+**Notable cross-phase fixes applied:**
+- Consolidated storage changed from fragile markdown to JSON (cross-phase fix 3) — prevents silent corruption for claims containing markdown syntax
+- Masked API keys preserved on POST /api/config — re-saving settings no longer destroys real API keys on disk
+- Consolidation consensus model corrected — new obs now compared against existing consolidated entries so second-agent shouts actually promote to `verified` rather than creating duplicate hypotheses
+- `contradict` + `verify` made archive-aware — post-archive lifecycle operations work correctly
+- `promote` and `demote` purified — `now` and `quarantineId` injected as params, enabling deterministic testing
+
+**Test suite:** 185 UAT tests across 8 layers (foundation/storage/similarity/lifecycle/tools/mcp/http/cli) — all GREEN at final SHA.
 
 ---
 

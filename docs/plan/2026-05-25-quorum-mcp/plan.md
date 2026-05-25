@@ -513,7 +513,72 @@ None — entirely greenfield.
 
 ## Progress log
 
-_(empty — populated as phases land)_
+### Phase 1 — 2026-05-25 ✅
+- Commit: `f07f46f`
+- Files: `src/types.ts`, `src/config.ts`, `src/paths.ts`, `bin/quorum.ts` (init only), `config.example.json`, `src/index.ts` (config-load stub)
+- `bun install`: 97 packages, 0 warnings
+- All 6 success criteria verified live by spec-reviewer
+- Key decisions: `expandHome` helper in `paths.ts` handles ~ expansion; `positiveInt = z.number().int().positive()` for all TTL fields; `switch` on `Bun.argv[2]` — no commander dep
+- Deviation: `data/` subdirs pre-existed from baseline scaffolding; `ensureStorageDirs` was a no-op but confirmed writable via `.keep` sentinels
+
+### Phase 2 — 2026-05-25 ✅
+- Commit: `22ebabb`
+- Files: `src/storage/ledger.ts`, `src/storage/consolidated.ts`, `src/storage/quarantine.ts`, `src/storage/archive.ts`, `src/storage/state.ts`
+- Also patched `src/paths.ts` to add missing `statePath()` getter
+- All 6 storage primitives verified: concurrent appends, hash stability, quarantine round-trip, archive roll, atomic state write (write-temp-then-rename)
+- Note: archive uses underscore separator (`domain_yyyy-mm.jsonl`) matching existing paths.ts convention
+
+### Phase 3 — 2026-05-25 ✅
+- Commits: `75c2d65` (initial) + `69089d9` (fix: model read from config)
+- Files: `src/similarity/engine.ts`, `hash-only.ts`, `claude.ts`, `openai.ts`, `gemini.ts`, `stubs.ts`
+- Added packages: `@anthropic-ai/sdk@0.98.0`, `openai@6.39.0`, `@google/generative-ai@0.24.1`
+- Jaccard threshold: 0.3 (unspecified in spec; 0.5 was too aggressive for short phrases)
+- Fix: engine factory now passes `config.similarity.claude_model` to ClaudeEngine instead of hardcoded string
+
+### Phase 4 — 2026-05-25 ✅
+- Commits: `d174cfa` (initial) + `edd91dd` (fix: purity)
+- Files: `src/lifecycle/ttl.ts`, `src/lifecycle/promote.ts`
+- Fix: `promote` and `demote` now accept `now: number` (and `quarantineId: string` for demote) as explicit params — no internal `Date.now()` / `crypto.randomUUID()` calls
+- 26/26 inline verification checks passed including same-agent edge case and TTL-reset on re-shout
+
+### Phase 5 — 2026-05-25 ✅
+- Commits: `576a3d1` (initial) + `633b636` (fix: remove quarantined entries from consolidated)
+- Files: `src/tools/shout.ts`, `recall.ts`, `consolidate.ts`, `contradict.ts`, `verify.ts`, `status.ts`
+- Fix: `contradict.ts` + `consolidate.ts` now `.filter()` out quarantined entries instead of marking `status: "contested"`
+- All 6 tools export `{name, schema, handler}` triple; tool names: learn_shout/recall/consolidate/contradict/verify/status
+- `evidence` field capped at 800 chars via zod `.max(800)` in shout and contradict
+- All errors return `JSON.stringify({ error })` — no throws
+
+### Phase 6 — 2026-05-25 ✅
+- Commit: `2dddac9`
+- Modified: `src/index.ts` (replaced config-load stub with full MCP server)
+- Used `McpServer` (high-level) from SDK 1.29.0 — `Server.setRequestHandler` is deprecated; McpServer is the recommended API
+- `console.log = console.error.bind(console)` at top of file; structured stderr logging
+- tools/list verified: 6 tools; tools/call learn_shout verified: correct content shape
+- MCP already registered in ~/.claude/settings.json (done by Phase 1 init)
+
+### Phase 7 — 2026-05-25 ✅
+- Commits: `0bf6717` (initial) + `42dbae5` (fix: hardcode hostname)
+- Created: `src/server.ts` (Hono HTTP server, port 4729)
+- Fix: `hostname` in export default hardcoded to `"127.0.0.1"` — security invariant, not configurable
+- API key masking: non-null strings >8 chars shown as first4...last4
+- POST /api/config validated through zod (saveConfig calls ConfigSchema.parse before write)
+- Static routes return 404 placeholder — dashboard files created in Phase 8
+
+### Phase 8 — 2026-05-25 ✅
+- Commit: `ce8b4d1`
+- Files: `src/dashboard/index.html`, `src/dashboard/app.js`, `src/dashboard/style.css`
+- Alpine.js v3 from CDN: `//unpkg.com/alpinejs@3`; dark theme `#1a1a1a` bg / `#e0e0e0` text
+- All 8 engine names in dropdown; API key input conditionally shown; save POSTs to /api/config
+- Quarantine view: pairs displayed side-by-side (resolve buttons deferred per spec)
+- curl http://127.0.0.1:4729/ confirmed returning HTML (not 404)
+
+### Phase 9 — 2026-05-25 ✅
+- Commit: `87830c4`
+- Modified: `bin/quorum.ts` (consolidate/status/dashboard/--help subcommands)
+- Created: `README.md`
+- All 4 subcommands verified live: --help lists all; status/consolidate print formatted tables; unknown-cmd exits 1
+- README has: install path, settings.json snippet, dashboard URL, data/ backup warning, crontab snippet, 3-item troubleshooting section
 
 ## Review findings
 

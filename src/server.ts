@@ -6,6 +6,7 @@ import { readConsolidated } from "./storage/consolidated.ts";
 import * as quarantine from "./storage/quarantine.ts";
 import { handler as statusHandler } from "./tools/status.ts";
 import { handler as consolidateHandler } from "./tools/consolidate.ts";
+import { ENGINE_NAMES, ENGINE_STATUS } from "./similarity/engine.ts";
 
 const app = new Hono();
 
@@ -17,6 +18,25 @@ function maskApiKey(value: string | null): string | null {
   if (value.length <= 8) return value;
   return value.slice(0, 4) + "..." + value.slice(-4);
 }
+
+// --- GET /api/engines ---
+const ENGINES_NEEDING_KEY = new Set(["openai-embed", "gemini", "deepseek", "minimax"]);
+const ENGINE_API_KEY_FIELD: Record<string, string> = {
+  "openai-embed": "openai",
+  "gemini": "gemini",
+  "deepseek": "deepseek",
+  "minimax": "minimax",
+};
+
+app.get("/api/engines", (c) => {
+  const engines = ENGINE_NAMES.map((name) => ({
+    name,
+    status: ENGINE_STATUS[name],
+    needsApiKey: ENGINES_NEEDING_KEY.has(name),
+    apiKeyField: ENGINE_API_KEY_FIELD[name] ?? null,
+  }));
+  return c.json(engines);
+});
 
 // --- GET /api/domains ---
 app.get("/api/domains", async (c) => {

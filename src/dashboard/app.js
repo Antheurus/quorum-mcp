@@ -15,41 +15,11 @@ function app() {
     consolidateResult: null,
     savingConfig: false,
 
-    engineNames: [
-      'hash-only',
-      'claude-haiku',
-      'claude-sonnet',
-      'openai-embed',
-      'gemini',
-      'deepseek',
-      'minimax',
-      'local-minilm',
-    ],
-    needsApiKey: [
-      'claude-haiku',
-      'claude-sonnet',
-      'openai-embed',
-      'gemini',
-      'deepseek',
-      'minimax',
-    ],
-
-    // ---- Engine → api_keys field mapping ----
-    engineApiKeyField(engine) {
-      const map = {
-        'claude-haiku':  'anthropic',
-        'claude-sonnet': 'anthropic',
-        'openai-embed':  'openai',
-        'gemini':        'gemini',
-        'deepseek':      'deepseek',
-        'minimax':       'minimax',
-      };
-      return map[engine] ?? null;
-    },
+    engines: [],
 
     get currentApiKeyField() {
       if (!this.config) return null;
-      return this.engineApiKeyField(this.config.similarity.engine);
+      return this.engines.find(e => e.name === this.config.similarity.engine)?.apiKeyField ?? null;
     },
 
     get currentApiKeyValue() {
@@ -64,7 +34,7 @@ function app() {
 
     // ---- Init ----
     async init() {
-      await Promise.all([this.loadDomains(), this.loadConfig()]);
+      await Promise.all([this.loadDomains(), this.loadConfig(), this.loadEngines()]);
     },
 
     // ---- Data loaders ----
@@ -121,6 +91,16 @@ function app() {
         this.config = await res.json();
       } catch (err) {
         this.showToast('Failed to load config: ' + err.message, 'error');
+      }
+    },
+
+    async loadEngines() {
+      try {
+        const res = await fetch('/api/engines');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        this.engines = await res.json();
+      } catch (err) {
+        this.showToast('Failed to load engines: ' + err.message, 'error');
       }
     },
 

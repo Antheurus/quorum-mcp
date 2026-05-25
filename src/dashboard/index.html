@@ -193,17 +193,17 @@
       <template x-if="config !== null">
         <div>
           <!-- Similarity engine -->
-          <div class="settings-group">
+          <div class="settings-group" x-show="engines.length > 0">
             <label>Similarity Engine</label>
             <select class="engine-select" x-model="config.similarity.engine">
-              <template x-for="name in engineNames" :key="name">
-                <option :value="name" x-text="name"></option>
+              <template x-for="e in engines" :key="e.name">
+                <option :value="e.name" x-text="e.name + ' — ' + e.status"></option>
               </template>
             </select>
           </div>
 
           <!-- API key — shown only when engine needs one -->
-          <div class="settings-group" x-show="needsApiKey.includes(config.similarity.engine)">
+          <div class="settings-group" x-show="engines.find(e => e.name === config.similarity.engine)?.needsApiKey">
             <label x-text="'API Key (' + (currentApiKeyField ?? 'key') + ')'"></label>
             <input
               type="password"

@@ -1,5 +1,7 @@
 # quorum
 
+![Quorum — knowledge consolidation for agent swarms](docs/assets/hero.png)
+
 Knowledge consolidation MCP server for [Claude Code](https://claude.ai/code). Observes claims from a swarm of subagents, clusters them via a pluggable similarity engine, promotes the agreed-upon ones to verified status, quarantines contradictions, and serves the consolidated result back with cache-bust headers that structurally prevent context poisoning.
 
 Append-only ledger. Off-hot-path consolidation. Pluggable similarity. Loud failures. MIT-licensed.
@@ -40,7 +42,7 @@ The `untested` engines work end-to-end but haven't been exercised under real swa
 ## Install
 
 ```bash
-git clone https://github.com/Antheurus/quorum.git ~/.claude/mcp-servers/quorum
+git clone https://github.com/Antheurus/quorum-mcp.git ~/.claude/mcp-servers/quorum
 cd ~/.claude/mcp-servers/quorum
 bun install
 bun bin/quorum.ts init

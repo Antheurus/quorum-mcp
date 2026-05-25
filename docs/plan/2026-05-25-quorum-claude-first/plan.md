@@ -681,4 +681,30 @@ _(reviewers fill after spec-review + cross-phase review)_
 
 ## Final status
 
-_(written after od-finish completes)_
+**Completed 2026-05-25 — HEAD `d000803`** (5 phases + 1 cross-phase fix commit on top of baseline `ac361c5`).
+
+The orchestration delivered the two-pronged outcome the brief asked for:
+
+**Prong 1 — Claude-first default + dashboard surface (Phases 1-2):**
+- `ClaudeEngine` rewired to `@anthropic-ai/claude-agent-sdk`'s `query()` so no separate `ANTHROPIC_API_KEY` is needed — auth flows through Claude Code's existing OAuth session via macOS Keychain. The mechanism mirrors what `claude-mem` uses.
+- `DEFAULT_CONFIG.similarity.engine` flipped from `"hash-only"` to `"claude-haiku"`. Live `config.json` flipped too (safe — no API key required).
+- `ENGINE_STATUS` hardcoded map exported from `src/similarity/engine.ts`; `claude-haiku` and `hash-only` → `"battle-tested"`, three others → `"untested"`, three stubs → `"stub — contribute"`. All 8 engines remain in the registry — pluggable architecture preserved.
+- `/api/engines` route added; dashboard dropdown now renders `"name — status"` and pulls metadata from the server.
+- Startup binary check in both `src/index.ts` and `bin/quorum.ts` — fail loud (exit 1, structured stderr JSON) when claude-* is active but the `claude` CLI is missing.
+
+**Prong 2 — Battle test (Phases 3-5) earning the `"battle-tested"` tag:**
+- **Phase 3 (Agent SDK smoke):** real `query()` call clustered 10 fixture claims into 3 perfect groups in 10.4s. Evidence: `tests/battle-test/runs/2026-05-25T07-39-02/01-agent-sdk-evidence.json`.
+- **Phase 4 (MCP lifecycle smoke):** 15 assertions covering version header, consensus, contradict→quarantine, verify-after-archive. The consensus assertion initially exposed a real bug in `promote.ts` — two agents shouting the same claim text with different obs_ids produced duplicate hypothesis entries instead of one verified entry. User-approved in-loop fix added claim-text equality as a 4th match criterion in `promote.ts:18` AND `consolidate.ts:58`. All 15/15 pass after the fix. Evidence: `tests/battle-test/runs/2026-05-25T07-50-29/02-mcp-lifecycle-evidence.jsonl`.
+- **Phase 5 (concurrent swarm):** 12 real Task subagents dispatched in parallel, each spawning its own MCP server via stdio JSON-RPC (pivot helper `03-shout-via-stdio.ts` — quorum MCP isn't loaded in the running CC session until restart; user approved this path). 36 concurrent shouts → zero interleaved bytes, zero lost writes, 8 consolidated entries each with multi-agent `confirmed_by` (one entry with ALL 12 agents). Dashboard polled every 2s during the swarm — 15/15 HTTP 200, server didn't crash. Evidence: `tests/battle-test/runs/2026-05-25T08-36-50/03-swarm-evidence.json`.
+
+**Cross-phase review (Opus) findings — both fixed in commit `d000803`:**
+- `src/tools/consolidate.ts:58` lookup was asymmetric with `src/lifecycle/promote.ts:13` — could create duplicate consolidated entries when promote found a match via agent-overlap but consolidate's findIndex missed it. Fixed: mirrored the 4-criteria predicate in both sites.
+- `src/similarity/claude.ts:48` silently dropped non-success `query()` result subtypes and surfaced a generic "empty result" downstream. Fixed: throw with `subtype` + `result` text on any non-success result event.
+
+**Notable learnings:**
+1. The `promote.ts` consensus merge gap was a real latent bug that production swarm usage would have hit immediately. Battle testing surfaced it before any real agent traffic.
+2. Quorum MCP registration in `~/.claude/settings.json` doesn't load tools into the running CC session — a restart is required. This is the manual gate the user must close after this orchestration commits (run `/mcp` in CC and verify `quorum` lists 6 tools).
+3. `@anthropic-ai/claude-agent-sdk` is the right primitive for "use the running CC session's auth" — same pattern `claude-mem` uses for its worker runtime.
+4. The Agent SDK adds ~10s cold-start latency per `query()` call vs direct API. Acceptable for cron-driven consolidation (every 15 minutes) but worth knowing if a future caller expects sub-second clustering.
+
+**Battle-tested status is now earned, not assumed.** Future passes should follow the same pattern to graduate other engines (openai-embed, gemini).

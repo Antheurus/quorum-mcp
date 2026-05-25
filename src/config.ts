@@ -63,7 +63,7 @@ export const DEFAULT_CONFIG: Config = {
     port: 4729,
   },
   similarity: {
-    engine: "hash-only",
+    engine: "claude-haiku",
     api_keys: {
       anthropic: null,
       openai: null,

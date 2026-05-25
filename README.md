@@ -17,6 +17,8 @@ bun bin/quorum.ts init
 
 `init` creates `config.json`, sets up storage directories, and optionally registers the MCP server in `~/.claude/settings.json`.
 
+The default engine is `claude-haiku` — it uses your Claude Code session, so no separate API key is needed.
+
 ---
 
 ## Claude Code registration
@@ -127,6 +129,14 @@ Edit `config.json` and change `dashboard.port` to a free port:
 
 ---
 
+**Claude binary not found**
+
+```
+{"level":"fatal","msg":"claude binary not found — install Claude Code CLI or switch engine to hash-only"}
+```
+
+The default engine `claude-haiku` uses Claude Code's OAuth session — no separate API key needed. If this error appears, ensure the `claude` CLI is installed and on your `PATH`, or switch `config.json:similarity.engine` to `hash-only`.
+
 **API key invalid**
 
-Similarity engines that need an API key (claude-haiku, openai, gemini) will log an auth error during consolidation. Update your key via the Settings page at [http://127.0.0.1:4729](http://127.0.0.1:4729), or edit `config.json` directly under `similarity.api_keys`.
+For engines that require their own API key (`openai-embed`, `gemini`, `deepseek`, `minimax`), update the key via the Settings page at [http://127.0.0.1:4729](http://127.0.0.1:4729), or edit `config.json` directly under `similarity.api_keys`.

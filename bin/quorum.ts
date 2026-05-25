@@ -1,5 +1,6 @@
 import { homedir } from "os";
 import path from "path";
+import { execFileSync } from "child_process";
 import { DEFAULT_CONFIG, DEFAULT_CONFIG_PATH, loadConfig, saveConfig } from "../src/config.ts";
 import { expandHome, ensureStorageDirs } from "../src/paths.ts";
 import { handler as consolidateHandler } from "../src/tools/consolidate.ts";
@@ -91,11 +92,20 @@ function printManualSnippet(): void {
 }
 
 async function runConsolidate(domain?: string): Promise<void> {
+  const config = await loadConfig();
+  if (config.similarity.engine.startsWith("claude-")) {
+    try {
+      execFileSync("claude", ["--version"], { stdio: "ignore", timeout: 3000 });
+    } catch {
+      console.error(JSON.stringify({ level: "fatal", msg: "claude binary not found — install Claude Code CLI or switch engine to hash-only" }));
+      process.exit(1);
+    }
+  }
+
   let domains: string[];
   if (domain) {
     domains = [domain];
   } else {
-    const config = await loadConfig();
     const storageDir = expandHome(config.storage_dir);
     const consolidatedDir = path.join(storageDir, "consolidated");
     const { promises: fs } = await import("fs");

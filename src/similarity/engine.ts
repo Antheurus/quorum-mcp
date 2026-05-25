@@ -16,6 +16,23 @@ export const ENGINE_NAMES = [
 
 export type EngineName = (typeof ENGINE_NAMES)[number];
 
+export type EngineStatusValue = "battle-tested" | "untested" | "stub — contribute";
+
+export const ENGINE_STATUS: Record<EngineName, EngineStatusValue> = {
+  "hash-only": "battle-tested",
+  "claude-haiku": "battle-tested",
+  "claude-sonnet": "untested",
+  "openai-embed": "untested",
+  "gemini": "untested",
+  "deepseek": "stub — contribute",
+  "minimax": "stub — contribute",
+  "local-minilm": "stub — contribute",
+};
+
+export function getEngineStatus(name: string): EngineStatusValue {
+  return ENGINE_STATUS[name as EngineName] ?? "untested";
+}
+
 export async function getEngine(name: string, config: Config): Promise<SimilarityEngine> {
   switch (name as EngineName) {
     case "hash-only": {
@@ -25,7 +42,7 @@ export async function getEngine(name: string, config: Config): Promise<Similarit
     case "claude-haiku":
     case "claude-sonnet": {
       const { ClaudeEngine } = await import("./claude.js");
-      return new ClaudeEngine(config, config.similarity.claude_model);
+      return new ClaudeEngine(config.similarity.claude_model);
     }
     case "openai-embed": {
       const { OpenAIEmbedEngine } = await import("./openai.js");

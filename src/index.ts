@@ -3,6 +3,8 @@ console.log = console.error.bind(console);
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { execFileSync } from "child_process";
+import { loadConfig } from "./config.js";
 
 import { name as shoutName, schema as shoutSchema, handler as shoutHandler } from "./tools/shout.ts";
 import { name as recallName, schema as recallSchema, handler as recallHandler } from "./tools/recall.ts";
@@ -49,5 +51,15 @@ server.tool(statusName, statusSchema.shape, async (input) => {
 const transport = new StdioServerTransport();
 
 process.stderr.write(JSON.stringify({ level: "info", msg: "Quorum MCP server starting" }) + "\n");
+
+const config = await loadConfig();
+if (config.similarity.engine.startsWith("claude-")) {
+  try {
+    execFileSync("claude", ["--version"], { stdio: "ignore", timeout: 3000 });
+  } catch {
+    process.stderr.write(JSON.stringify({ level: "fatal", msg: "claude binary not found — install Claude Code CLI or switch engine to hash-only" }) + "\n");
+    process.exit(1);
+  }
+}
 
 await server.connect(transport);

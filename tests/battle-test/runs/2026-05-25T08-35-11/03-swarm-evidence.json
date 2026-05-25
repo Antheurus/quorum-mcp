@@ -1,0 +1,135 @@
+{
+  "domain": "battle-test-swarm-1779698000",
+  "expected_total_shouts": 36,
+  "actual_ledger_count": 0,
+  "ledger_parse_errors": [],
+  "consolidate_counts": {
+    "merged": 0,
+    "promoted": 0,
+    "archived": 0,
+    "quarantined": 0
+  },
+  "consolidated_entry_count": 8,
+  "consensus_entries": [
+    {
+      "obs_id": "149c685b-ea50-4124-877a-8bee551f0029",
+      "claim": "Use Bun.password.hash / Bun.password.verify instead of installing bcrypt",
+      "status": "verified",
+      "confirmed_by": [
+        "swarm-agent-7",
+        "swarm-agent-6",
+        "swarm-agent-5",
+        "swarm-agent-1",
+        "swarm-agent-9",
+        "swarm-agent-0",
+        "swarm-agent-8"
+      ]
+    },
+    {
+      "obs_id": "43ee6210-340a-4a4d-bc63-06f2fee49c3b",
+      "claim": "kuliah.unsia.ac.id is built on Nuxt with Vue $axios; auth state in Vuex",
+      "status": "verified",
+      "confirmed_by": [
+        "swarm-agent-7",
+        "swarm-agent-6",
+        "swarm-agent-5",
+        "swarm-agent-3",
+        "swarm-agent-4",
+        "swarm-agent-11"
+      ]
+    },
+    {
+      "obs_id": "6102e133-cea5-4379-960a-7adb1de1ee1b",
+      "claim": "onConflictDoUpdate is the correct seed pattern, not onConflictDoNothing",
+      "status": "verified",
+      "confirmed_by": [
+        "swarm-agent-7",
+        "swarm-agent-6",
+        "swarm-agent-5",
+        "swarm-agent-0",
+        "swarm-agent-8",
+        "swarm-agent-2",
+        "swarm-agent-1",
+        "swarm-agent-9",
+        "swarm-agent-10"
+      ]
+    },
+    {
+      "obs_id": "693092f9-1d3f-46dc-9f3f-14019d1af9de",
+      "claim": "Firefox DevTools network panel does not have replay-XHR; use a custom snippet instead",
+      "status": "verified",
+      "confirmed_by": [
+        "swarm-agent-7",
+        "swarm-agent-6",
+        "swarm-agent-5"
+      ]
+    },
+    {
+      "obs_id": "8ce30fcf-6b6c-4ab8-bb52-911ff22f4a62",
+      "claim": "Bun is a JavaScript runtime that bundles a package manager and bcrypt natively",
+      "status": "verified",
+      "confirmed_by": [
+        "swarm-agent-7",
+        "swarm-agent-6",
+        "swarm-agent-5",
+        "swarm-agent-0",
+        "swarm-agent-8"
+      ]
+    },
+    {
+      "obs_id": "90ff70e5-c964-44aa-9c4a-77e64dcca17f",
+      "claim": "Postgres unique-target upsert with explicit SET clause keeps seeds idempotent",
+      "status": "verified",
+      "confirmed_by": [
+        "swarm-agent-7",
+        "swarm-agent-6",
+        "swarm-agent-5",
+        "swarm-agent-0",
+        "swarm-agent-8",
+        "swarm-agent-2",
+        "swarm-agent-1",
+        "swarm-agent-9",
+        "swarm-agent-10",
+        "swarm-agent-3",
+        "swarm-agent-11"
+      ]
+    },
+    {
+      "obs_id": "eb366900-a79b-4bad-b06f-7c2348e914cb",
+      "claim": "Edlink UI uses Vue 2 + Nuxt; auth lives in store.state.token",
+      "status": "verified",
+      "confirmed_by": [
+        "swarm-agent-7",
+        "swarm-agent-6",
+        "swarm-agent-5",
+        "swarm-agent-0",
+        "swarm-agent-8",
+        "swarm-agent-2",
+        "swarm-agent-1",
+        "swarm-agent-9",
+        "swarm-agent-10",
+        "swarm-agent-3",
+        "swarm-agent-4",
+        "swarm-agent-11"
+      ]
+    },
+    {
+      "obs_id": "f23edb14-2b0c-4924-abea-309221b35a24",
+      "claim": "Chrome DevTools can replay XHR requests via Network panel right-click",
+      "status": "verified",
+      "confirmed_by": [
+        "swarm-agent-7",
+        "swarm-agent-6",
+        "swarm-agent-5",
+        "swarm-agent-4"
+      ]
+    }
+  ],
+  "dashboard_response_codes": [
+    "1 matches in 1F:",
+    "[file] tests/battle-test/runs/swarm-curl-1779698000.log (1):",
+    "16: POLLING_DONE"
+  ],
+  "swarm_size_used": null,
+  "claims_per_agent_range": "3 (N%8, (N+1)%8, (N+2)%8)"
+}

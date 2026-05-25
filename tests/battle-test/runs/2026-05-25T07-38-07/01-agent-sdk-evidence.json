@@ -1,0 +1,35 @@
+{
+  "elapsed_ms": 11419,
+  "claims": [
+    "Edlink UI uses Vue 2 + Nuxt; auth lives in store.state.token",
+    "kuliah.unsia.ac.id is built on Nuxt with Vue $axios; auth state in Vuex",
+    "Edlink frontend is a Nuxt app, $axios is pre-configured with auth interceptor",
+    "Bun is a JavaScript runtime that bundles a package manager and bcrypt natively",
+    "Use Bun.password.hash / Bun.password.verify instead of installing bcrypt",
+    "Bun ships with native bcrypt — no npm install needed",
+    "onConflictDoUpdate is the correct seed pattern, not onConflictDoNothing",
+    "Seed scripts should self-heal by re-applying values via onConflictDoUpdate",
+    "Use onConflictDoUpdate so reruns correct drift from prior seeds",
+    "Postgres unique-target upsert with explicit SET clause keeps seeds idempotent"
+  ],
+  "clusters": [
+    [
+      0,
+      1,
+      2
+    ],
+    [
+      3,
+      4,
+      5
+    ],
+    [
+      6,
+      7,
+      8,
+      9
+    ]
+  ],
+  "engine_available": true,
+  "cost_estimate": "~$0.00 (claude via CC OAuth — billed through CC subscription)"
+}

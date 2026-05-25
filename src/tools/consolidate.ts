@@ -55,8 +55,14 @@ export async function handler(input: ConsolidateInput): Promise<string> {
 
         // Build or update consolidated entry
         const primaryObs = cluster[0];
+        const clusterAgents = cluster.map((o) => o.agent_id);
+        const clusterObsIds = new Set(cluster.map((o) => o.obs_id));
         const existingIdx = updatedEntries.findIndex(
-          (e) => e.obs_id === primaryObs.obs_id || e.claim === primaryObs.claim
+          (e) =>
+            clusterObsIds.has(e.obs_id) ||
+            e.obs_id === primaryObs.obs_id ||
+            e.confirmed_by.some((agent) => clusterAgents.includes(agent)) ||
+            e.claim === primaryObs.claim
         );
 
         const entry: ConsolidatedEntry = {

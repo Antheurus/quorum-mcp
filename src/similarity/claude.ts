@@ -45,8 +45,12 @@ export class ClaudeEngine implements SimilarityEngine {
     });
 
     for await (const event of queryResult) {
-      if ((event as any).type === "result" && (event as any).subtype === "success") {
-        resultText = (event as any).result;
+      const e = event as any;
+      if (e.type === "result") {
+        if (e.subtype !== "success") {
+          throw new Error(`Claude query non-success: subtype=${e.subtype} result=${e.result ?? "(none)"}`);
+        }
+        resultText = e.result;
         break;
       }
     }

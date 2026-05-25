@@ -22,13 +22,10 @@ export async function getEngine(name: string, config: Config): Promise<Similarit
       const { HashOnlyEngine } = await import("./hash-only.js");
       return new HashOnlyEngine();
     }
-    case "claude-haiku": {
-      const { ClaudeEngine } = await import("./claude.js");
-      return new ClaudeEngine(config, "claude-haiku-4-5-20251001");
-    }
+    case "claude-haiku":
     case "claude-sonnet": {
       const { ClaudeEngine } = await import("./claude.js");
-      return new ClaudeEngine(config, "claude-sonnet-4-6");
+      return new ClaudeEngine(config, config.similarity.claude_model);
     }
     case "openai-embed": {
       const { OpenAIEmbedEngine } = await import("./openai.js");

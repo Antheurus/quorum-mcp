@@ -15,7 +15,8 @@ export function promote(
     (e) =>
       clusterObsIds.has(e.obs_id) ||
       e.obs_id === primaryObsId ||
-      e.confirmed_by.some((agent) => clusterAgents.includes(agent))
+      e.confirmed_by.some((agent) => clusterAgents.includes(agent)) ||
+      e.claim === cluster[0]?.claim
   );
 
   // Merge confirmed_by from existing entry (if any) with new cluster agents

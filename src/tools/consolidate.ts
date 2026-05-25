@@ -55,7 +55,9 @@ export async function handler(input: ConsolidateInput): Promise<string> {
 
         // Build or update consolidated entry
         const primaryObs = cluster[0];
-        const existingIdx = updatedEntries.findIndex((e) => e.obs_id === primaryObs.obs_id);
+        const existingIdx = updatedEntries.findIndex(
+          (e) => e.obs_id === primaryObs.obs_id || e.claim === primaryObs.claim
+        );
 
         const entry: ConsolidatedEntry = {
           obs_id: primaryObs.obs_id,

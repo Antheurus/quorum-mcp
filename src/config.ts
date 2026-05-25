@@ -27,7 +27,6 @@ const ConfigSchema = z.object({
   storage_dir: z.string(),
   dashboard: z.object({
     port: z.number().int().min(1).max(65535),
-    host: z.string(),
   }),
   similarity: z.object({
     engine: z.string(),
@@ -62,7 +61,6 @@ export const DEFAULT_CONFIG: Config = {
   storage_dir: path.join(homedir(), ".claude", "mcp-servers", "quorum", "data"),
   dashboard: {
     port: 4729,
-    host: "127.0.0.1",
   },
   similarity: {
     engine: "hash-only",

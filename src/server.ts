@@ -95,7 +95,18 @@ app.post("/api/config", async (c) => {
     return c.json({ error: "Invalid JSON body" }, 400);
   }
   try {
-    await saveConfig(body as Parameters<typeof saveConfig>[0]);
+    // Preserve real API keys — masked values (containing "...") must not overwrite real keys
+    const current = await loadConfig();
+    const typedBody = body as Parameters<typeof saveConfig>[0];
+    if (typedBody?.similarity?.api_keys) {
+      for (const k of Object.keys(typedBody.similarity.api_keys) as Array<keyof typeof typedBody.similarity.api_keys>) {
+        const incoming = typedBody.similarity.api_keys[k];
+        if (typeof incoming === "string" && incoming.includes("...")) {
+          typedBody.similarity.api_keys[k] = current.similarity.api_keys[k];
+        }
+      }
+    }
+    await saveConfig(typedBody);
     return c.json({ ok: true });
   } catch (err) {
     return c.json({ error: err instanceof Error ? err.message : String(err) }, 400);

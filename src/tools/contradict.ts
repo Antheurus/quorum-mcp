@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { readLedgerSince } from "../storage/ledger.ts";
+import { readLedgerSince, appendObservation } from "../storage/ledger.ts";
 import { readConsolidated, writeConsolidated } from "../storage/consolidated.ts";
 import * as quarantine from "../storage/quarantine.ts";
 import { demote } from "../lifecycle/promote.ts";
@@ -39,6 +39,8 @@ export async function handler(input: ContradictInput): Promise<string> {
       ts: Date.now(),
       contradicts: input.obs_id,
     };
+
+    await appendObservation(input.domain, newObs);
 
     const quarantineId = crypto.randomUUID();
     const pair = demote(originalObs, newObs, Date.now(), quarantineId);

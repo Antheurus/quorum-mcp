@@ -20,6 +20,7 @@ type ConsolidateInput = z.infer<typeof schema>;
 
 export async function handler(input: ConsolidateInput): Promise<string> {
   try {
+    const now = Date.now();
     const config = await loadConfig();
     const engineName = input.engine ?? config.similarity.engine;
     const state = await stateStore.read(input.domain);
@@ -50,7 +51,6 @@ export async function handler(input: ConsolidateInput): Promise<string> {
 
       for (const clusterIndices of clusters) {
         const cluster: Observation[] = clusterIndices.map((i) => regular[i]);
-        const now = Date.now();
         const result = promote(cluster, updatedEntries, now);
 
         // Build or update consolidated entry
@@ -96,11 +96,10 @@ export async function handler(input: ConsolidateInput): Promise<string> {
     }
 
     // Write updated consolidated
-    const now = Date.now();
     const hash = await writeConsolidated(input.domain, updatedEntries);
 
-    // Roll archive
-    archived = await archive.roll(input.domain, state.last_consolidated_ts);
+    // Roll archive — use current run's timestamp so newly processed obs are archived immediately
+    archived = await archive.roll(input.domain, now);
 
     // Update state
     const ledgerCount = (await readLedgerSince(input.domain, 0)).length;

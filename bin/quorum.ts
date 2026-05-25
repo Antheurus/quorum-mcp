@@ -169,8 +169,7 @@ async function runStatus(): Promise<void> {
 async function runDashboard(): Promise<void> {
   const config = await loadConfig();
   const port = config.dashboard.port;
-  const host = config.dashboard.host ?? "127.0.0.1";
-  console.log(`Starting dashboard at http://${host}:${port}`);
+  console.log(`Starting dashboard at http://127.0.0.1:${port}`);
   await import("../src/server.ts");
   // Bun keeps the process alive while the server is running
 }

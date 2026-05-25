@@ -1,0 +1,29 @@
+{
+  "name": "quorum-mcp",
+  "version": "0.1.0",
+  "description": "Swarm-aware self-learning memory MCP. Append-only ledger + deterministic consolidator with pluggable similarity engine. Anti-poisoning by design.",
+  "type": "module",
+  "bin": {
+    "quorum": "./bin/quorum.ts"
+  },
+  "scripts": {
+    "mcp": "bun src/index.ts",
+    "dashboard": "bun src/server.ts",
+    "consolidate": "bun bin/quorum.ts consolidate",
+    "status": "bun bin/quorum.ts status",
+    "init": "bun bin/quorum.ts init"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "hono": "^4.6.14",
+    "@hono/node-server": "^1.13.7",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.14",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "bun": ">=1.1.0"
+  }
+}

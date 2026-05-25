@@ -1,8 +1,11 @@
 import { z } from "zod";
+import path from "path";
+import { promises as fs } from "fs";
 import { readLedgerSince, appendObservation } from "../storage/ledger.ts";
 import { readConsolidated, writeConsolidated } from "../storage/consolidated.ts";
 import * as quarantine from "../storage/quarantine.ts";
 import { demote } from "../lifecycle/promote.ts";
+import { resolveStorageDir } from "../paths.ts";
 import type { Observation } from "../types.ts";
 
 export const name = "learn_contradict";
@@ -17,11 +20,33 @@ export const schema = z.object({
 
 type ContradictInput = z.infer<typeof schema>;
 
+async function findObsById(domain: string, obsId: string): Promise<Observation | null> {
+  const allObs = await readLedgerSince(domain, 0);
+  const found = allObs.find((o) => o.obs_id === obsId);
+  if (found) return found;
+
+  const storageDir = await resolveStorageDir();
+  const archiveDir = path.join(storageDir, "archive");
+  try {
+    const files = await fs.readdir(archiveDir);
+    for (const file of files) {
+      if (!file.startsWith(domain + "_")) continue;
+      const content = await Bun.file(path.join(archiveDir, file)).text();
+      for (const line of content.split("\n").filter(Boolean)) {
+        try {
+          const obs = JSON.parse(line) as Observation;
+          if (obs.obs_id === obsId) return obs;
+        } catch {}
+      }
+    }
+  } catch {}
+  return null;
+}
+
 export async function handler(input: ContradictInput): Promise<string> {
   try {
-    // Find original observation in the full ledger
-    const allObs = await readLedgerSince(input.domain, 0);
-    const originalObs = allObs.find((o) => o.obs_id === input.obs_id);
+    // Find original observation in the full ledger (including archives)
+    const originalObs = await findObsById(input.domain, input.obs_id);
 
     if (!originalObs) {
       return JSON.stringify({ error: `obs_id not found in ledger: ${input.obs_id}` });
